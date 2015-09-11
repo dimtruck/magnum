@@ -22,7 +22,7 @@ from magnum.api.middleware import auth_token
 
 AUTH_OPTS = [
     cfg.BoolOpt('enable_authentication',
-                default=True,
+                default=False,
                 help='This option enables or disables user authentication '
                 'via Keystone. Default value is True.'),
 ]

@@ -13,12 +13,15 @@
 # limitations under the License.
 
 import copy
+import json
 
 import keystoneclient.exceptions as kc_exception
+from keystoneclient.v2_0 import client as kc_v2
 from keystoneclient.v3 import client as kc_v3
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
+import requests
 
 from magnum.common import context as magnum_context
 from magnum.common import exception
@@ -36,6 +39,33 @@ trust_opts = [
 cfg.CONF.register_opts(trust_opts)
 cfg.CONF.import_opt('auth_uri', 'keystonemiddleware.auth_token',
                     group='keystone_authtoken')
+
+AUTH_OPTS = [
+    cfg.StrOpt('keystone_version',
+               default='2',
+               help='The keystone version to use with Magnum'),
+]
+
+cfg.CONF.register_opts(AUTH_OPTS)
+
+
+class KeystoneClient(object):
+    """Keystone client wrapper to initialize the right version of the client.
+
+       The version to use is specified in magnum.conf
+       """
+
+    def __new__(self, context):
+        ks_version = cfg.CONF.get('keystone_version')
+        if ks_version == '2':
+            return KeystoneClientV2(context)
+        elif ks_version == '3':
+            return KeystoneClientV3(context)
+        else:
+            msg = _('Unsupported version of keystone: %s') % ks_version
+            LOG.error(msg)
+            raise exception.AuthorizationFailure(client='keystone',
+                                                 message=msg)
 
 
 class KeystoneClientV3(object):
@@ -59,11 +89,11 @@ class KeystoneClientV3(object):
         self._is_admin = context.is_admin
 
         if self.context.auth_url:
-            self.v3_endpoint = self.context.auth_url.replace('v2.0', 'v3')
+            self.endpoint = self.context.auth_url.replace('v2.0', 'v3')
         else:
             # Import auth_token to have keystone_authtoken settings setup.
             importutils.import_module('keystonemiddleware.auth_token')
-            self.v3_endpoint = cfg.CONF.keystone_authtoken.auth_uri.replace(
+            self.endpoint = cfg.CONF.keystone_authtoken.auth_uri.replace(
                 'v2.0', 'v3')
 
         if self.context.trust_id:
@@ -96,8 +126,8 @@ class KeystoneClientV3(object):
 
     def _v3_client_init(self):
         kwargs = {
-            'auth_url': self.v3_endpoint,
-            'endpoint': self.v3_endpoint
+            'auth_url': self.endpoint,
+            'endpoint': self.endpoint
         }
         # Note try trust_id first, as we can't reuse auth_token in that case
         if self.context.trust_id is not None:
@@ -141,7 +171,7 @@ class KeystoneClientV3(object):
                 raise exception.AuthorizationFailure()
             # All OK so update the context with the token
             self.context.auth_token = client.auth_ref.auth_token
-            self.context.auth_url = self.v3_endpoint
+            self.context.auth_url = self.endpoint
             self.context.user = client.auth_ref.user_id
             self.context.project_id = client.auth_ref.project_id
             self.context.user_name = client.auth_ref.username
@@ -154,8 +184,8 @@ class KeystoneClientV3(object):
         creds = {
             'username': cfg.CONF.keystone_authtoken.admin_user,
             'password': cfg.CONF.keystone_authtoken.admin_password,
-            'auth_url': self.v3_endpoint,
-            'endpoint': self.v3_endpoint,
+            'auth_url': self.endpoint,
+            'endpoint': self.endpoint,
             'project_name': cfg.CONF.keystone_authtoken.admin_tenant_name}
         LOG.info(_LI('admin creds %s') % creds)
         return creds
@@ -196,6 +226,92 @@ class KeystoneClientV3(object):
             self.client.trusts.delete(trust_id)
         except kc_exception.NotFound:
             pass
+
+    @property
+    def auth_token(self):
+        return self.client.auth_token
+
+
+class KeystoneClientV2(object):
+    """Keystone V2 client wrapper so we can encapsulate logic in one place."""
+
+    def __init__(self, context):
+        self.context = context
+        self._client = None
+        self._admin_client = None
+
+        if self.context.auth_url:
+            self.endpoint = self.context.auth_url.replace('v3', 'v2.0')
+        else:
+            # Import auth_token to have keystone_authtoken settings setup.
+            importutils.import_module('keystonemiddleware.auth_token')
+            self.endpoint = cfg.CONF.keystone_authtoken.auth_uri.replace(
+                'v3', 'v2.0')
+
+        self.imp_url = self.endpoint + '/RAX-AUTH/impersonation-tokens'
+        self.data = {"RAX-AUTH:impersonation": {"user": {"username": ""},
+                                                "expire-in-seconds": 10800}}
+        self.headers = {"Content-type": "application/json",
+                        "X-Auth-Token": ""}
+
+    def _service_admin_creds(self):
+        # Import auth_token to have keystone_authtoken settings setup.
+        importutils.import_module('keystonemiddleware.auth_token')
+        creds = {
+            'username': cfg.CONF.keystone_authtoken.admin_user,
+            'password': cfg.CONF.keystone_authtoken.admin_password,
+            'auth_url': self.endpoint,
+            'endpoint': self.endpoint,
+            'project_name': cfg.CONF.keystone_authtoken.admin_tenant_name}
+        LOG.info('admin creds %s' % creds)
+        return creds
+
+    @property
+    def client(self):
+        if not self._client:
+            # Create connection to v2 API
+            self._client = self._v2_client_init()
+        return self._client
+
+    @property
+    def admin_client(self):
+        if not self._admin_client:
+            # Create admin client connection to v2 API
+            admin_creds = self._service_admin_creds()
+            c = kc_v2.Client(**admin_creds)
+            if c.authenticate():
+                self._admin_client = c
+            else:
+                LOG.error("Admin client authentication failed")
+                raise exception.AuthorizationFailure()
+        return self._admin_client
+
+    def _v2_client_init(self):
+        kwargs = {
+            'auth_url': self.endpoint,
+            'endpoint': self.endpoint
+        }
+
+        if self.context.auth_token is not None:
+            kwargs['token'] = self.context.auth_token
+            kwargs['project_id'] = self.context.project_id
+            kwargs['tenant_id'] = self.context.project_id
+        else:
+            LOG.error(_("Keystone v2 API connection failed, no auth_token "))
+            raise exception.AuthorizationFailure()
+        client = kc_v2.Client(**kwargs)
+        if 'auth_ref' not in kwargs:
+            client.authenticate()
+
+        return client
+
+    def get_impersonation_token(self, username):
+        self.data["RAX-AUTH:impersonation"]["user"]["username"] = username
+        ad_client = self.admin_client
+        self.headers["X-Auth-Token"] = ad_client.auth_token
+        r = requests.post(self.imp_url, data=json.dumps(self.data),
+                          headers=self.headers)
+        return json.loads(r.text)["access"]["token"]["id"]
 
     @property
     def auth_token(self):
