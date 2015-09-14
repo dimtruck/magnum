@@ -23,9 +23,9 @@ import uuid
 
 from tempest_lib import exceptions
 
-from functional.common import datagen
-from functional.api.v1.base import DesignateV2Test
-from functional.api.v1.clients.baymodel_client import BayModelClient
+from magnum.tests.functional.common import datagen
+from magnum.tests.functional.api.base import MagnumV1Test
+from magnum.tests.functional.api.v1.clients.baymodel_client import BayModelClient
 
 
 class BayModelTest(MagnumV1Test):

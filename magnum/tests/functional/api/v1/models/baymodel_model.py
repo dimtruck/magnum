@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from functional.common.models import BaseModel
+from magnum.tests.functional.common.models import BaseModel
 
 
 class BayModelModel(BaseModel):

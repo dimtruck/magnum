@@ -16,9 +16,7 @@ limitations under the License.
 
 from tempest_lib import exceptions
 
-from functional.api.v2.clients.quotas_client import QuotasClient
-from functional.api.v2.models.quotas_model import QuotasModel
-from functional.common.base import BaseMagnumTest
+from magnum.tests.functional.common.base import BaseMagnumTest
 
 
 class MagnumV1Test(BaseMagnumTest):

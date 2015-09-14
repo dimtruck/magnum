@@ -24,15 +24,15 @@ from tempest_lib.common.rest_client import RestClient
 from tempest_lib.auth import KeystoneV2Credentials
 from tempest_lib.auth import KeystoneV2AuthProvider
 
-from functionaltests.common.utils import memoized
+from magnum.tests.functional.common.utils import memoized
 
 
 class KeystoneV2AuthProviderWithOverridableUrl(KeystoneV2AuthProvider):
 
     def base_url(self, *args, **kwargs):
         # use the base url from the config if it was specified
-        if cfg.CONF.identity.Magnum_override_url:
-            return cfg.CONF.identity.magnum_override_url
+        if cfg.CONF.auth.magnum_url:
+            return cfg.CONF.auth.magnum_url
         else:
             return super(KeystoneV2AuthProviderWithOverridableUrl, self) \
                 .base_url(*args, **kwargs)
@@ -44,7 +44,7 @@ class BaseMagnumClient(RestClient):
         super(BaseMagnumClient, self).__init__(
             auth_provider=self.get_auth_provider(),
             service='magnum',
-            region=cfg.CONF.identity.region
+            region=cfg.CONF.auth.region
         )
 
     def get_auth_provider(self):
@@ -62,7 +62,7 @@ class BaseMagnumClient(RestClient):
 
     def _create_keystone_auth_provider(self, creds):
         auth_provider = KeystoneV2AuthProviderWithOverridableUrl(
-            creds, cfg.CONF.identity.uri)
+            creds, cfg.CONF.auth.auth_url)
         auth_provider.fill_credentials()
         return auth_provider
 
@@ -78,9 +78,9 @@ class MagnumClient(BaseMagnumClient):
 
     def _get_keystone_auth_provider(self):
         creds = KeystoneV2Credentials(
-            username=cfg.CONF.identity.username,
-            password=cfg.CONF.identity.password,
-            tenant_name=cfg.CONF.identity.tenant_name,
+            username=cfg.CONF.auth.username,
+            password=cfg.CONF.auth.password,
+            tenant_name=cfg.CONF.auth.tenant_name,
         )
         return self._create_keystone_auth_provider(creds)
 
@@ -96,9 +96,9 @@ class MagnumAltClient(BaseMagnumClient):
 
     def _get_keystone_auth_provider(self):
         creds = KeystoneV2Credentials(
-            username=cfg.CONF.identity.alt_username,
-            password=cfg.CONF.identity.alt_password,
-            tenant_name=cfg.CONF.identity.alt_tenant_name,
+            username=cfg.CONF.auth.alt_username,
+            password=cfg.CONF.auth.alt_password,
+            tenant_name=cfg.CONF.auth.alt_tenant_name,
         )
         return self._create_keystone_auth_provider(creds)
 
@@ -114,9 +114,9 @@ class MagnumAdminClient(BaseMagnumClient):
 
     def _get_keystone_auth_provider(self):
         creds = KeystoneV2Credentials(
-            username=cfg.CONF.identity.admin_username,
-            password=cfg.CONF.identity.admin_password,
-            tenant_name=cfg.CONF.identity.admin_tenant_name,
+            username=cfg.CONF.admin.user,
+            password=cfg.CONF.admin['pass'],
+            tenant_name=cfg.CONF.admin.tenant,
         )
         return self._create_keystone_auth_provider(creds)
 

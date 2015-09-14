@@ -16,7 +16,7 @@ limitations under the License.
 import uuid
 import random
 
-from functional.api.v2.models.baymodel_model import BayModelModel
+from magnum.tests.functional.api.v1.models.baymodel_model import BayModelModel
 
 
 def random_uuid():

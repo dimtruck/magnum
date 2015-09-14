@@ -14,9 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from functional.api.v1.models.baymodel_model import BayModelModel
-from functional.api.v1.models.baymodel_model import BayModelListModel
-from functional.common.client import ClientMixin
+from magnum.tests.functional.api.v1.models.baymodel_model import BayModelModel
+from magnum.tests.functional.api.v1.models.baymodel_model import BayModelListModel
+from magnum.tests.functional.common.client import ClientMixin
 
 
 class BayModelClient(ClientMixin):

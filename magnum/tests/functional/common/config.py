@@ -19,7 +19,7 @@ import os
 from oslo_config import cfg
 
 cfg.CONF.register_group(cfg.OptGroup(
-    name='identity', title="Configuration for Keystone auth"
+    name='auth', title="Configuration for Keystone auth"
 ))
 
 cfg.CONF.register_group(cfg.OptGroup(
@@ -27,12 +27,12 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 cfg.CONF.register_opts([
-    cfg.StrOpt('magnum_override_url',
+    cfg.StrOpt('magnum_url',
                help="Use this instead of the endpoint in the service catalog"),
 
-    cfg.StrOpt('uri', help="The Keystone v2 endpoint"),
-    cfg.StrOpt('uri_v3', help="The Keystone v3 endpoint"),
-    cfg.StrOpt('auth_version', default='v2'),
+    cfg.StrOpt('auth_url', help="The Keystone v2 endpoint"),
+    cfg.StrOpt('auth_v3_url', help="The Keystone v3 endpoint"),
+    cfg.StrOpt('auth_version', default='v3'),
     cfg.StrOpt('region', default='RegionOne'),
 
     cfg.StrOpt('username'),
@@ -44,12 +44,13 @@ cfg.CONF.register_opts([
     cfg.StrOpt('alt_tenant_name'),
     cfg.StrOpt('alt_password', secret=True),
     cfg.StrOpt('alt_domain_name'),
+], group='auth')
 
-    cfg.StrOpt('admin_username'),
-    cfg.StrOpt('admin_tenant_name'),
-    cfg.StrOpt('admin_password', secret=True),
-    cfg.StrOpt('admin_domain_name'),
-], group='identity')
+cfg.CONF.register_opts([
+    cfg.StrOpt('user'),
+    cfg.StrOpt('tenant'),
+    cfg.StrOpt('pass', secret=True),
+], group='admin')
 
 cfg.CONF.register_opts([
     cfg.StrOpt('magnum_endpoint', help="The Magnum API endpoint"),
@@ -62,7 +63,7 @@ cfg.CONF.register_opts([
 
 def find_config_file():
     return os.environ.get(
-        'TEMPEST_CONFIG', 'func_test.conf')
+        'TEMPEST_CONFIG', 'functional_creds.conf')
 
 
 def read_config():
