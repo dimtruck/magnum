@@ -22,8 +22,23 @@ class BayModelModel(BaseModel):
     def __init__(self, acl_ref=None, read=None):
         super(BayModelModel, self).__init__()
         # figure out which values are needed here
-        self.acl_ref = acl_ref
-        self.read = read
+        self.uuid='27e3153e-d5bf-4b7e-b517-fb518e17f34c'
+        self.name='example'
+        self.image_id='Fedora-k8s'
+        self.flavor_id='m1.small'
+        self.master_flavor_id='m1.small'
+        self.dns_nameserver='8.8.1.1'
+        self.keypair_id='keypair1'
+        self.external_network_id='ffc44e4a-2319-4062-bce0-9ae1c38b05ba'
+        self.fixed_network='private'
+        self.apiserver_port=8080
+        self.docker_volume_size=25
+        self.cluster_distro='fedora-atomic'
+        self.ssh_authorized_key='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB'
+        self.coe='kubernetes'
+        self.http_proxy='http://proxy.com:123'
+        self.https_proxy='https://proxy.com:123'
+        self.no_proxy='192.168.0.1,192.168.0.2,192.168.0.3'
         
 class BayModelListModel(BaseModel):
 

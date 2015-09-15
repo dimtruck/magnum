@@ -23,7 +23,7 @@ class BayModelClient(ClientMixin):
 
     @classmethod
     def baymodels_uri(cls, filters=None):
-        url = "/v1/baymodels"
+        url = "/baymodels"
         if filters:
             url = cls.add_filters(url, filters)
         return url

@@ -31,6 +31,9 @@ from magnum.common import clients
 from magnum.common import exception
 from magnum.common import policy
 from magnum import objects
+from oslo_log import log as logging
+
+LOG = logging.getLogger(__name__)
 
 
 class BayModelPatchType(types.JsonPatchType):
@@ -325,6 +328,8 @@ class BayModelsController(rest.RestController):
         :param baymodel_uuid: UUID of a baymodel.
         :param patch: a json PATCH document to apply to this baymodel.
         """
+        LOG.debug('Calling patch with %s' %
+                  baymodel_uuid)
         rpc_baymodel = objects.BayModel.get_by_uuid(pecan.request.context,
                                                     baymodel_uuid)
         try:

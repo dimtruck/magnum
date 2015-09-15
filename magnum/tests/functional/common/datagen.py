@@ -34,8 +34,23 @@ def random_string(prefix='rand', n=8, suffix=''):
     return prefix + digits + suffix
 
 
-def random_baymodel_data():
+def random_baymodel_data(keypair_id=random_string(), image_id=random_string()):
     data = {
-        "pattern": random_string()
+        "name": random_string(),
+        "image_id": image_id,
+        "flavor_id": random_string(),
+        "master_flavor_id": random_string(),
+        "dns_nameserver": "8.8.1.1",
+        "keypair_id": keypair_id,
+        "external_network_id": str(random_uuid()),
+        "fixed_network": "private",
+        "apiserver_port": 8080,
+        "docker_volume_size": 25,
+        "cluster_distro": random_string(),
+        "ssh_authorized_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB",
+        "coe": "kubernetes",
+        "http_proxy": "http://proxy.com:123",
+        "https_proxy": "https://proxy.com:123",
+        "no_proxy": "192.168.0.1,192.168.0.2,192.168.0.3"
     }
     return BayModelModel.from_dict(data)

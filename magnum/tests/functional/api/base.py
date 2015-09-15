@@ -14,10 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from oslo_log import log as logging
+import json
+
 from tempest_lib import exceptions
 
 from magnum.tests.functional.common.base import BaseMagnumTest
 
+LOG = logging.getLogger(__name__)
 
 class MagnumV1Test(BaseMagnumTest):
 
@@ -29,9 +33,11 @@ class MagnumV1Test(BaseMagnumTest):
         Test that UUIDs used in the URL is valid.
         """
         self._assert_exception(
-            exceptions.BadRequest, 'invalid_uuid', 400, method, *args)
+            exceptions.BadRequest,
+            "Invalid input for field/attribute baymodel_uuid. Value: '%s'. unable to convert to uuid" % args[0],
+            400, method, *args)
 
-    def _assert_exception(self, exc, type_, status, method, *args, **kwargs):
+    def _assert_exception(self, exc, message, status, method, *args, **kwargs):
         """
         Checks the response that a api call with a exception contains the
         wanted data.
@@ -39,5 +45,4 @@ class MagnumV1Test(BaseMagnumTest):
         try:
             method(*args, **kwargs)
         except exc as e:
-            self.assertEqual(status, e.resp_body['code'])
-            self.assertEqual(type_, e.resp_body['type'])
+            self.assertIn(message, json.loads(e.resp_body['error_message'])['faultstring'])
