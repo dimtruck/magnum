@@ -16,55 +16,34 @@ limitations under the License.
 
 import os
 
-from oslo_config import cfg
+import ConfigParser
 
-cfg.CONF.register_group(cfg.OptGroup(
-    name='auth', title="Configuration for Keystone auth"
-))
+class Config(object):
+    
+    @classmethod
+    def setUp(cls):
+        config = ConfigParser.RawConfigParser()
+        if config.read('functional_creds.conf'):
+            # the OR pattern means the environment is preferred for
+            # override
+            cls.admin_user = config.get('admin', 'user')
+            cls.admin_passwd = config.get('admin', 'pass')
+            cls.admin_tenant = config.get('admin', 'tenant')
 
-cfg.CONF.register_group(cfg.OptGroup(
-    name='noauth', title="Configuration to run tests without Keystone"
-))
+            cls.user = config.get('auth', 'username')
+            cls.passwd = config.get('auth', 'password')
+            cls.tenant = config.get('auth', 'tenant_name')
+            cls.domain_name = config.get('auth', 'domain_name')
+            cls.auth_url = config.get('auth', 'auth_url')
+            cls.auth_v3_url = config.get('auth', 'auth_v3_url')
+            cls.magnum_url = config.get('auth', 'magnum_url')
+            cls.auth_version = config.get('auth', 'auth_version')
+            cls.region = config.get('auth', 'region')
+            
+            cls.image_id = config.get('magnum', 'image_id')
+            cls.nic_id = config.get('magnum', 'nic_id')
 
-cfg.CONF.register_opts([
-    cfg.StrOpt('magnum_url',
-               help="Use this instead of the endpoint in the service catalog"),
-
-    cfg.StrOpt('auth_url', help="The Keystone v2 endpoint"),
-    cfg.StrOpt('auth_v3_url', help="The Keystone v3 endpoint"),
-    cfg.StrOpt('auth_version', default='v3'),
-    cfg.StrOpt('region', default='RegionOne'),
-
-    cfg.StrOpt('username'),
-    cfg.StrOpt('tenant_name'),
-    cfg.StrOpt('password', secret=True),
-    cfg.StrOpt('domain_name'),
-
-    cfg.StrOpt('alt_username'),
-    cfg.StrOpt('alt_tenant_name'),
-    cfg.StrOpt('alt_password', secret=True),
-    cfg.StrOpt('alt_domain_name'),
-], group='auth')
-
-cfg.CONF.register_opts([
-    cfg.StrOpt('user'),
-    cfg.StrOpt('tenant'),
-    cfg.StrOpt('pass', secret=True),
-], group='admin')
-
-cfg.CONF.register_opts([
-    cfg.StrOpt('magnum_endpoint', help="The Magnum API endpoint"),
-    cfg.StrOpt('tenant_id', default='noauth-project'),
-    cfg.StrOpt('alt_tenant_id', default='alt-project'),
-    cfg.StrOpt('admin_tenant_id', default='admin-project'),
-    cfg.BoolOpt('use_noauth', default=False),
-], group='noauth')
-
-
-def find_config_file():
-    return os.environ.get(
-        'TEMPEST_CONFIG', 'functional_creds.conf')
-
-
-def read_config():
-    cfg.CONF(args=[], default_config_files=[find_config_file()])
+            cls.use_noauth = config.get('noauth', 'use_noauth')
+            cls.tenant_id = config.get('noauth', 'tenant_id')
+            cls.admin_tenant = config.get('noauth', 'admin_tenant_id')
+            cls.magnum_endpoint = config.get('noauth', 'magnum_endpoint')

@@ -25,14 +25,15 @@ from tempest_lib.auth import KeystoneV2Credentials
 from tempest_lib.auth import KeystoneV2AuthProvider
 
 from magnum.tests.functional.common.utils import memoized
+import magnum.tests.functional.common.config
 
 
 class KeystoneV2AuthProviderWithOverridableUrl(KeystoneV2AuthProvider):
 
     def base_url(self, *args, **kwargs):
         # use the base url from the config if it was specified
-        if cfg.CONF.auth.magnum_url:
-            return cfg.CONF.auth.magnum_url
+        if Config.magnum_url:
+            return Config.magnum_url
         else:
             return super(KeystoneV2AuthProviderWithOverridableUrl, self) \
                 .base_url(*args, **kwargs)
@@ -44,11 +45,11 @@ class BaseMagnumClient(RestClient):
         super(BaseMagnumClient, self).__init__(
             auth_provider=self.get_auth_provider(),
             service='magnum',
-            region=cfg.CONF.auth.region
+            region=Config.auth.region
         )
 
     def get_auth_provider(self):
-        if cfg.CONF.noauth.use_noauth:
+        if Config.noauth.use_noauth:
             return self._get_noauth_auth_provider()
         return self._get_keystone_auth_provider()
 
@@ -62,7 +63,7 @@ class BaseMagnumClient(RestClient):
 
     def _create_keystone_auth_provider(self, creds):
         auth_provider = KeystoneV2AuthProviderWithOverridableUrl(
-            creds, cfg.CONF.auth.auth_url)
+            creds, Config.auth.auth_url)
         auth_provider.fill_credentials()
         return auth_provider
 
@@ -72,15 +73,15 @@ class MagnumClient(BaseMagnumClient):
 
     def _get_noauth_auth_provider(self):
         creds = KeystoneV2Credentials(
-            tenant_id=cfg.CONF.noauth.tenant_id,
+            tenant_id=Config.noauth.tenant_id,
         )
-        return NoAuthAuthProvider(creds, cfg.CONF.noauth.magnum_endpoint)
+        return NoAuthAuthProvider(creds, Config.noauth.magnum_endpoint)
 
     def _get_keystone_auth_provider(self):
         creds = KeystoneV2Credentials(
-            username=cfg.CONF.auth.username,
-            password=cfg.CONF.auth.password,
-            tenant_name=cfg.CONF.auth.tenant_name,
+            username=Config.auth.username,
+            password=Config.auth.password,
+            tenant_name=Config.auth.tenant_name,
         )
         return self._create_keystone_auth_provider(creds)
 
@@ -90,15 +91,15 @@ class MagnumAltClient(BaseMagnumClient):
 
     def _get_noauth_auth_provider(self):
         creds = KeystoneV2Credentials(
-            tenant_id=cfg.CONF.noauth.alt_tenant_id,
+            tenant_id=Config.noauth.alt_tenant_id,
         )
-        return NoAuthAuthProvider(creds, cfg.CONF.noauth.magnum_endpoint)
+        return NoAuthAuthProvider(creds, Config.noauth.magnum_endpoint)
 
     def _get_keystone_auth_provider(self):
         creds = KeystoneV2Credentials(
-            username=cfg.CONF.auth.alt_username,
-            password=cfg.CONF.auth.alt_password,
-            tenant_name=cfg.CONF.auth.alt_tenant_name,
+            username=Config.auth.alt_username,
+            password=Config.auth.alt_password,
+            tenant_name=Config.auth.alt_tenant_name,
         )
         return self._create_keystone_auth_provider(creds)
 
@@ -108,15 +109,15 @@ class MagnumAdminClient(BaseMagnumClient):
 
     def _get_noauth_auth_provider(self):
         creds = KeystoneV2Credentials(
-            tenant_id=cfg.CONF.noauth.tenant_id,
+            tenant_id=Config.noauth.tenant_id,
         )
-        return NoAuthAuthProvider(creds, cfg.CONF.noauth.magnum_endpoint)
+        return NoAuthAuthProvider(creds, Config.noauth.magnum_endpoint)
 
     def _get_keystone_auth_provider(self):
         creds = KeystoneV2Credentials(
-            username=cfg.CONF.admin.user,
-            password=cfg.CONF.admin['pass'],
-            tenant_name=cfg.CONF.admin.tenant,
+            username=Config.admin.user,
+            password=Config.admin['pass'],
+            tenant_name=Config.admin.tenant,
         )
         return self._create_keystone_auth_provider(creds)
 

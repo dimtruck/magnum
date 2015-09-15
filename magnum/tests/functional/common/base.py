@@ -13,7 +13,7 @@ limitations under the License.
 
 import tempest_lib.base
 
-from magnum.tests.functional.common.config import read_config
+import magnum.tests.functional.common.config
 
 
 class BaseMagnumTest(tempest_lib.base.BaseTestCase):
@@ -24,4 +24,4 @@ class BaseMagnumTest(tempest_lib.base.BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super(BaseMagnumTest, cls).setUpClass()
-        read_config()
+        Config.setUp()
