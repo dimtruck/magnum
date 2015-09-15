@@ -17,6 +17,7 @@ import uuid
 import random
 
 from magnum.tests.functional.api.v1.models.baymodel_model import BayModelModel
+from magnum.tests.functional.api.v1.models.baymodelpatch_model import BayModelPatchListModel
 
 
 def random_uuid():
@@ -53,4 +54,16 @@ def random_baymodel_data(keypair_id=random_string(), image_id=random_string()):
         "https_proxy": "https://proxy.com:123",
         "no_proxy": "192.168.0.1,192.168.0.2,192.168.0.3"
     }
-    return BayModelModel.from_dict(data)
+    model = BayModelModel.from_dict(data)
+
+    print "return baymodelmodel %s " % model
+    return model
+
+
+def random_baymodel_patch_data(name=random_string()):
+    data = [{
+        "path": "/name",
+        "value": name,
+        "op": "replace"
+    }]
+    return BayModelPatchListModel.from_dict(data)

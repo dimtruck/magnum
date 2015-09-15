@@ -46,10 +46,10 @@ class BayModelClient(ClientMixin):
             body=baymodel_model.to_json(), **kwargs)
         return self.deserialize(resp, body, BayModelModel)
 
-    def patch_baymodel(self, baymodel_id, baymodel_model, **kwargs):
+    def patch_baymodel(self, baymodel_id, baymodelpatch_listmodel, **kwargs):
         resp, body = self.client.patch(
             self.baymodel_uri(baymodel_id),
-            body=baymodel_model.to_json(), **kwargs)
+            body=baymodelpatch_listmodel.to_json(), **kwargs)
         return self.deserialize(resp, body, BayModelModel)
 
     def delete_baymodel(self, baymodel_id, **kwargs):

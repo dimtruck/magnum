@@ -14,19 +14,39 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+
 from magnum.tests.functional.common.models import BaseModel
 from magnum.tests.functional.common.models import EntityModel
 from magnum.tests.functional.common.models import CollectionModel
 
-
-class BayModelData(BaseModel):
+class BayModelPatchData(BaseModel):
     pass
 
 
-class BayModelModel(EntityModel):
-    ENTITY_NAME = 'baymodel'
-    MODEL_TYPE = BayModelData
+class BayModelPatchModel(EntityModel):
+    ENTITY_NAME = 'baymodelpatch'
+    MODEL_TYPE = BayModelPatchData
         
-class BayModelListModel(CollectionModel):
-    COLLECTION_NAME = 'baymodellists'
-    MODEL_TYPE = BayModelData
+class BayModelPatchListModel(CollectionModel):
+    MODEL_TYPE = BayModelPatchData
+    COLLECTION_NAME = 'baymodelpatchlist'
+
+    def to_json(self):
+        # get list from self.COLLECTION_NAME
+        data = getattr(self, 'baymodelpatchlist')
+        collection = []
+        for d in data:
+            collection.append(d.to_dict())
+        return json.dumps(collection)
+
+    @classmethod
+    def from_dict(cls, data):
+
+        # deserialize e.g. data['zones']
+        model = cls()
+        collection = []
+        for d in data:
+          collection.append(cls.MODEL_TYPE.from_dict(d))
+        setattr(model, cls.COLLECTION_NAME, collection)
+        return model

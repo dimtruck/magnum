@@ -29,6 +29,7 @@ class BaseModel(object):
     @classmethod
     def from_dict(cls, data):
         model = cls()
+        print "inside base model: %s with model %s " % (data, model)
         for key in data:
             setattr(model, key, data.get(key))
         return model
@@ -43,3 +44,43 @@ class BaseModel(object):
 
     def __str__(self):
         return "%s" % self.to_dict()
+
+
+class EntityModel(BaseModel):
+    """
+    { 'entity_name': { <data> } }
+    """
+
+    @classmethod
+    def from_dict(cls, data):
+        print "inside entity model: %s " % data
+        model = super(EntityModel, cls).from_dict(data)
+        if hasattr(model, cls.ENTITY_NAME):
+            val = getattr(model, cls.ENTITY_NAME)
+            setattr(model, cls.ENTITY_NAME, cls.MODEL_TYPE.from_dict(val))
+        return model
+
+
+class CollectionModel(BaseModel):
+    """
+    {
+        'collection_name' : [ <models> ],
+        'links': { <links> },
+        'metdata': { <metadata> },
+    }
+    """
+
+
+    @classmethod
+    def from_dict(cls, data):
+        model = super(CollectionModel, cls).from_dict(data)
+
+        # deserialize e.g. data['zones']
+        collection = []
+        if hasattr(model, cls.COLLECTION_NAME):
+            for d in getattr(model, cls.COLLECTION_NAME):
+                collection.append(cls.MODEL_TYPE.from_dict(d))
+            setattr(model, cls.COLLECTION_NAME, collection)
+
+
+        return model
