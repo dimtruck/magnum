@@ -76,6 +76,12 @@ class Config(object):
             raise Exception('config missing keypair_id key')
 
     @classmethod
+    def set_flavor_id(cls, config):
+        cls.flavor_id = config.get('magnum', 'flavor_id')
+        if not config.has_option('magnum', 'flavor_id'):
+            raise Exception('config missing flavor_id key')
+
+    @classmethod
     def setUp(cls):
         config = ConfigParser.RawConfigParser()
         if config.read('functional_creds.conf'):
@@ -91,5 +97,6 @@ class Config(object):
             cls.set_image_id(config)
             cls.set_nic_id(config)
             cls.set_keypair_id(config)
+            cls.set_flavor_id(config)
         else:
             raise Exception('missing functional_creds.conf file')
