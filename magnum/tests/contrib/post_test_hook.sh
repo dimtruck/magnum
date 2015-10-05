@@ -38,8 +38,8 @@ echo_summary "magnum's post_test_hook.sh was called..."
 constraints="-c $REQUIREMENTS_DIR/upper-constraints.txt"
 sudo pip install $constraints -U -r requirements.txt -r test-requirements.txt
 
-export MAGNUM_DIR="$BASE/new/magnum"
-sudo chown -R jenkins:stack $MAGNUM_DIR
+#export MAGNUM_DIR="$BASE/new/magnum"
+#sudo chown -R jenkins:stack $MAGNUM_DIR
 
 # Get admin credentials
 pushd ../devstack
@@ -87,6 +87,40 @@ EOF
 echo_summary $CREDS_FILE
 cat $CREDS_FILE
 
+# create a valid sample csr
+CSR_FILE=$MAGNUM_DIR/default.csr
+cat <<EOF > $CSR_FILE
+-----BEGIN CERTIFICATE REQUEST-----
+MIIByjCCATMCAQAwgYkxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlh
+MRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgSW5jMR8w
+HQYDVQQLExZJbmZvcm1hdGlvbiBUZWNobm9sb2d5MRcwFQYDVQQDEw53d3cuZ29v
+Z2xlLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEApZtYJCHJ4VpVXHfV
+IlstQTlO4qC03hjX+ZkPyvdYd1Q4+qbAeTwXmCUKYHThVRd5aXSqlPzyIBwieMZr
+WFlRQddZ1IzXAlVRDWwAo60KecqeAXnnUK+5fXoTI/UgWshre8tJ+x/TMHaQKR/J
+cIWPhqaQhsJuzZbvAdGA80BLxdMCAwEAAaAAMA0GCSqGSIb3DQEBBQUAA4GBAIhl
+4PvFq+e7ipARgI5ZM+GZx6mpCz44DTo0JkwfRDf+BtrsaC0q68eTf2XhYOsq4fkH
+Q0uA0aVog3f5iJxCa3Hp5gxbJQ6zV6kJ0TEsuaaOhEko9sdpCoPOnRBm2i/XRD2D
+6iNh8f8z0ShGsFqjDgFHyF3o+lUyj+UC6H1QW7bn
+-----END CERTIFICATE REQUEST-----
+EOF
+
+# create an ivalid sample csr
+CSR_FILE=$MAGNUM_DIR/invalid.csr
+cat <<EOF > $CSR_FILE
+-----BEGIN CERTIFICATE REQUEST-----
+FAKERFAKERyjCCATMCAQAwgYkxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlh
+MRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgSW5jMR8w
+HQYDVQQLExZJbmZvcm1hdGlvbiBUZWNobm9sb2d5MRcwFQYDVQQDEw53d3cuZ29v
+Z2xlLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEApZtYJCHJ4VpVXHfV
+IlstQTlO4qC03hjX+ZkPyvdYd1Q4+qbAeTwXmCUKYHThVRd5aXSqlPzyIBwieMZr
+WFlRQddZ1IzXAlVRDWwAo60KecqeAXnnUK+5fXoTI/UgWshre8tJ+x/TMHaQKR/J
+cIWPhqaQhsJuzZbvAdGA80BLxdMCAwEAAaAAMA0GCSqGSIb3DQEBBQUAA4GBAIhl
+4PvFq+e7ipARgI5ZM+GZx6mpCz44DTo0JkwfRDf+BtrsaC0q68eTf2XhYOsq4fkH
+Q0uA0aVog3f5iJxCa3Hp5gxbJQ6zV6kJ0TEsuaaOhEko9sdpCoPOnRBm2i/XRD2D
+6iNh8f8z0ShGsFqjDgFHyF3o+lUyj+UC6H1QW7bn
+-----END CERTIFICATE REQUEST-----
+EOF
+
 # Create a keypair for use in the functional tests.
 echo_summary "Generate a key-pair"
 ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
@@ -102,6 +136,7 @@ nova flavor-create  m1.magnum 100 2048 8 1
 
 echo "Running magnum functional test suite for $1"
 sudo -E -H -u jenkins tox -e functional-$1 -- --concurrency=1
+
 EXIT_CODE=$?
 
 # Delete the keypair used in the functional test.
@@ -119,9 +154,9 @@ sudo cp $MAGNUM_DIR/functional-tests.log /opt/stack/logs/
 sudo cp $CREDS_FILE /opt/stack/logs/
 
 # Save the logs
-sudo mv ../logs/* /opt/stack/logs/
+#sudo mv ../logs/* /opt/stack/logs/
 
 # Restore xtrace
 $XTRACE
-
-exit $EXIT_CODE
+echo $EXIT_CODE
+#exit $EXIT_CODE

@@ -87,9 +87,19 @@ class Config(object):
             # optional magnum bypass url
             cls.magnum_url = config.get('auth', 'magnum_url')
 
+<<<<<<< HEAD
             cls.set_region(config)
             cls.set_image_id(config)
             cls.set_nic_id(config)
             cls.set_keypair_id(config)
+=======
+            cls.keypair_id = config.get('magnum', 'keypair_id')
+            if not config.has_option('magnum', 'keypair_id'):
+                raise Exception('config missing keypair_id key')
+
+            cls.flavor_id = config.get('magnum', 'flavor_id')
+            if not config.has_option('magnum', 'flavor_id'):
+                raise Exception('config missing flavor_id key')
+>>>>>>> 6735652... Add magnum bay api tempest tests
         else:
             raise Exception('missing functional_creds.conf file')
