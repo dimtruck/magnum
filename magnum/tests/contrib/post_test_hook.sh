@@ -99,7 +99,39 @@ nova flavor-create  m1.magnum 100 2048 8 1
 # mesos later.
 
 echo "Running magnum functional test suite for $1"
-sudo -E -H -u jenkins tox -e functional-$1 -- --concurrency=1
+
+# For api, we will run tempest tests
+if [[ "api" == $1 ]]; then
+    source $BASE/new/devstack/functions
+    echo "TEMPEST_SERVICES+=,magnum" >> $localrc_path
+    pushd $BASE/new/tempest
+    sudo chown -R jenkins:stack $BASE/new/tempest
+    #sudo chown -R jenkins:stack $BASE/data/tempest
+    
+    # show tempest config
+    cat etc/tempest.conf
+
+    # Import devstack functions 'iniset', 'iniget' and 'trueorfalse'
+    source $BASE/new/devstack/functions
+
+    # Set up tempest config with magnum goodness
+    iniset $BASE/new/tempest/etc/tempest.conf magnum image_id $IMAGE_ID
+    iniset $BASE/new/tempest/etc/tempest.conf magnum nic_id $NIC_ID
+    iniset $BASE/new/tempest/etc/tempest.conf magnum keypair_id default
+    iniset $BASE/new/tempest/etc/tempest.conf magnum flavor_id m1.magnum
+
+    # show tempest config with magnum
+    cat etc/tempest.conf
+
+    # Set up concurrency and test regex
+    export MAGNUM_TEMPEST_CONCURRENCY=${MAGNUM_TEMPEST_CONCURRENCY:-1}
+    export MAGNUM_TESTS=${MAGNUM_TESTS:-'api.v1'}
+
+    echo "Running tempest magnum test suites"
+    sudo -H -u jenkins tox -eall-plugin -- $MAGNUM_TESTS --concurrency=$MAGNUM_TEMPEST_CONCURRENCY
+else
+    sudo -E -H -u jenkins tox -e functional-$1 -- --concurrency=1
+fi
 EXIT_CODE=$?
 
 # Delete the keypair used in the functional test.
