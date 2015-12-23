@@ -1,6 +1,8 @@
 #!/bin/sh
+echo "start time for network config service: `date`" >> /var/log/swarm.log
 
 . /etc/sysconfig/heat-params
+echo "sourced heat params: `date`" >> /var/log/swarm.log
 
 echo "Configuring ${NETWORK_DRIVER} network ..."
 
@@ -60,6 +62,10 @@ chmod 0755 $FLANNEL_CONFIG_BIN
 
 chown root:root $FLANNEL_CONFIG_SERVICE
 chmod 0644 $FLANNEL_CONFIG_SERVICE
+echo "add perms for flannel stuff: `date`" >> /var/log/swarm.log
 
 systemctl enable flannel-config
 systemctl start --no-block flannel-config
+echo "started flannel config: `date`" >> /var/log/swarm.log
+echo "stop time for network config service: `date`" >> /var/log/swarm.log
+

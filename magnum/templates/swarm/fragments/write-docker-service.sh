@@ -1,8 +1,10 @@
 #!/bin/sh
+echo "start time for write docker service: `date`" >> /var/log/swarm.log
 
 . /etc/sysconfig/heat-params
 
 mkdir -p /etc/systemd/system/docker.service.d
+echo "create dirs: `date`" >> /var/log/swarm.log
 
 cat > /etc/systemd/system/docker.service << END_SERVICE_TOP
 [Unit]

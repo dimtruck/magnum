@@ -1,4 +1,5 @@
 #!/bin/sh
+echo "start time for write network config service: `date`" >> /var/log/swarm.log
 
 . /etc/sysconfig/heat-params
 
@@ -35,3 +36,4 @@ fi
 cat >> $FLANNEL_JSON <<EOF
 }
 EOF
+echo "stop time for network config service: `date`" >> /var/log/swarm.log

@@ -17,6 +17,8 @@
 import json
 import os
 import subprocess
+from time import gmtime
+from time import strftime
 
 import requests
 
@@ -133,14 +135,26 @@ def write_server_cert(config, csr_req):
         fp.write(csr_resp.json()['pem'])
 
 
+def write_to_log(message):
+    with open("/var/log/swarm.log", 'a') as fp:
+        fp.write(message)
+        fp.write(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+
+
 def main():
     config = load_config()
     if config['TLS_DISABLED'] == 'False':
+        write_to_log("start time for make-cert")
         create_dirs()
+        write_to_log("created directories")
         write_ca_cert(config)
+        write_to_log("wrote ca cert")
         write_server_key()
+        write_to_log("wrote server key")
         csr_req = create_server_csr(config)
+        write_to_log("created server csr")
         write_server_cert(config, csr_req)
+        write_to_log("wrote server cert")
 
 
 if __name__ == '__main__':
