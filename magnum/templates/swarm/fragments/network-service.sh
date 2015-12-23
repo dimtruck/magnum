@@ -1,6 +1,7 @@
 #!/bin/sh
 
 . /etc/sysconfig/heat-params
+echo "start time for network service: `date`" >> /var/log/swarm.log
 
 echo "Configuring ${NETWORK_DRIVER} network service ..."
 
@@ -16,6 +17,7 @@ FLANNEL_DOCKER_BRIDGE_CONF=/etc/systemd/system/flanneld.service.d/flannel-docker
 
 mkdir -p /etc/systemd/system/docker.service.d
 mkdir -p /etc/systemd/system/flanneld.service.d
+echo "created directories: `date`" >> /var/log/swarm.log
 
 sed -i '
 /^FLANNEL_ETCD=/ s|=.*|="http://'"$ETCD_SERVER_IP"':2379"|
@@ -36,6 +38,7 @@ EOF
 
 chown root:root $FLANNEL_DOCKER_BRIDGE_BIN
 chmod 0755 $FLANNEL_DOCKER_BRIDGE_BIN
+echo "gave some perms to binaries: `date`" >> /var/log/swarm.log
 
 cat >> $FLANNEL_DOCKER_BRIDGE_SERVICE <<EOF
 [Unit]
@@ -54,6 +57,7 @@ EOF
 
 chown root:root $FLANNEL_DOCKER_BRIDGE_SERVICE
 chmod 0644 $FLANNEL_DOCKER_BRIDGE_SERVICE
+echo "gave some perms to services: `date`" >> /var/log/swarm.log
 
 cat >> $DOCKER_FLANNEL_CONF <<EOF
 [Unit]
@@ -66,6 +70,7 @@ EOF
 
 chown root:root $DOCKER_FLANNEL_CONF
 chmod 0644 $DOCKER_FLANNEL_CONF
+echo "gave some perms to flanner configs: `date`" >> /var/log/swarm.log
 
 cat >> $FLANNEL_DOCKER_BRIDGE_CONF <<EOF
 [Unit]
@@ -78,7 +83,9 @@ EOF
 
 chown root:root $FLANNEL_DOCKER_BRIDGE_CONF
 chmod 0644 $FLANNEL_DOCKER_BRIDGE_CONF
+echo "gave more perms to docker configs: `date`" >> /var/log/swarm.log
 
 echo "activating service flanneld"
 systemctl enable flanneld
 systemctl --no-block start flanneld
+echo "stop time for network service: `date`" >> /var/log/swarm.log

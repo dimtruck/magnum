@@ -1,6 +1,9 @@
 #!/bin/sh
 
+touch /var/log/swarm.log
+echo "start time for add-proxy: `date`" >> /var/log/swarm.log
 . /etc/sysconfig/heat-params
+echo "sourced heat-params: `date`" >> /var/log/swarm.log
 
 DOCKER_PROXY_CONF=/etc/systemd/system/docker.service.d/proxy.conf
 BASH_RC=/etc/bashrc
@@ -12,7 +15,9 @@ if [ -n "$HTTP_PROXY" ]; then
 EOF
 
     systemctl daemon-reload
+echo "reloaded daemon-reload: `date`" >> /var/log/swarm.log
     systemctl --no-block restart docker.service
+echo "restarted docker.service: `date`" >> /var/log/swarm.log
 
     if [ -f "$BASH_RC" ]; then
         echo "declare -x http_proxy=$HTTP_PROXY" >> $BASH_RC
@@ -38,3 +43,4 @@ if [ -f "$BASH_RC" ]; then
 else
     echo "File $BASH_RC does not exist, not setting no_proxy"
 fi
+echo "get out of add-proxy.sh: `date`" >> /var/log/swarm.log

@@ -40,11 +40,10 @@ class BayTest(base.BaseMagnumTest):
         try:
             super(BayTest, self).setUp()
             self.credentials = self.get_credentials(type_of_creds='default')
-            (self.baymodel_client,
-             self.keypairs_client) = self.get_clients_with_existing_creds(
-                 creds=self.credentials,
-                 type_of_creds='default',
-                 request_type='baymodel')
+            (self.baymodel_client, _) = self.get_clients_with_existing_creds(
+                creds=self.credentials,
+                type_of_creds='default',
+                request_type='baymodel')
             (self.bay_client, _) = self.get_clients_with_existing_creds(
                 creds=self.credentials,
                 type_of_creds='default',

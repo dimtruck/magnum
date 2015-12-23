@@ -1,6 +1,8 @@
 #!/bin/sh
+echo "start time for write swarm agent service: `date`" >> /var/log/swarm.log
 
 . /etc/sysconfig/heat-params
+echo "source heat params: `date`" >> /var/log/swarm.log
 
 myip=$(ip addr show eth0 |
        awk '$1 == "inet" {print $2}' | cut -f1 -d/)
@@ -36,6 +38,7 @@ EOF
 
 chown root:root $CONF_FILE
 chmod 644 $CONF_FILE
+echo "perm the config file: `date`" >> /var/log/swarm.log
 
 SCRIPT=/usr/local/bin/notify-heat
 
@@ -46,11 +49,16 @@ do
     echo "Waiting for swarm agent registration..."
     sleep 5
 done
+echo "set up etcd: `date`" >> /var/log/swarm.log
 
 curl -sf -X PUT -H 'Content-Type: application/json' \
     --data-binary '{"Status": "SUCCESS", "Reason": "Swarm agent ready", "Data": "OK", "UniqueId": "00000"}' \
     "$AGENT_WAIT_HANDLE"
 EOF
 
+echo "let magnum know that agent is ready: `date`" >> /var/log/swarm.log
+
 chown root:root $SCRIPT
 chmod 755 $SCRIPT
+
+echo "stop time for write swarm agent service: `date`" >> /var/log/swarm.log
