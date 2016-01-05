@@ -109,12 +109,12 @@ class BayClient(client.ClientMixin):
 
     def wait_for_bay_to_delete(self, bay_id):
         utils.wait_for_condition(
-            lambda: self.does_bay_not_exist(bay_id), 1, 900)
+            lambda: self.does_bay_not_exist(bay_id), 1, 1800)
 
     def wait_for_created_bay(self, bay_id):
         try:
             utils.wait_for_condition(
-                lambda: self.does_bay_exist(bay_id), 1, 900)
+                lambda: self.does_bay_exist(bay_id), 1, 1800)
         except Exception:
             # In error state.  Clean up the bay id
             self.delete_bay(bay_id)
