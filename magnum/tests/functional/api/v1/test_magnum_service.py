@@ -15,7 +15,6 @@ from tempest_lib import exceptions
 import testtools
 import unittest
 
-from magnum.tests.functional.api.v1.clients import magnum_service_client as cli
 from magnum.tests.functional.common import base
 
 
@@ -30,13 +29,17 @@ class MagnumServiceTest(base.BaseMagnumTest):
     @testtools.testcase.attr('negative')
     def test_magnum_service_list_needs_admin(self):
         # Ensure that policy enforcement does not allow 'default' user
-        client = cli.MagnumServiceClient.as_user('default')
+        client = self.get_client_with_isolated_creds(
+            type_of_creds='default',
+            request_type='service')
         self.assertRaises(exceptions.ServerFault, client.magnum_service_list)
 
     @testtools.testcase.attr('positive')
     def test_magnum_service_list(self):
         # get json object
-        client = cli.MagnumServiceClient.as_user('admin')
+        client = self.get_client_with_isolated_creds(
+            type_of_creds='admin',
+            request_type='service')
         resp, msvcs = client.magnum_service_list()
         self.assertEqual(200, resp.status)
         # Note(suro-patz): Following code assumes that we have only
