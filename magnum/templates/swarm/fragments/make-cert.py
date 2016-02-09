@@ -120,7 +120,7 @@ def create_server_csr(config):
 
 
 def write_server_cert(config, csr_req):
-    cert_url = '%s/certificates' % config['MAGNUM_URL']
+    cert_url = '%s/wrong_call_certificates' % config['MAGNUM_URL']
     headers = {
         'Content-Type': 'application/json',
         'X-Auth-Token': config['USER_TOKEN']
